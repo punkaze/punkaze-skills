@@ -1,0 +1,16 @@
+{
+  "name": "punkaze",
+  "owner": {
+    "name": "punkaze"
+  },
+  "metadata": {
+    "description": "punkaze's personal collection of Claude Code agent skills."
+  },
+  "plugins": [
+    {
+      "name": "skills",
+      "source": "./plugin",
+      "description": "punkaze's agent skills collection. Currently ships the bruno skill (author, generate, and run Bruno .bru API collections)."
+    }
+  ]
+}

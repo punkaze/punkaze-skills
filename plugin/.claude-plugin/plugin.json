@@ -1,0 +1,11 @@
+{
+  "name": "skills",
+  "description": "punkaze's agent skills collection. Ships the bruno skill: author, generate, and run Bruno .bru API collections, with a zero-dependency collection generator and verified Bruno 3.5.0 syntax.",
+  "version": "1.0.0",
+  "author": {
+    "name": "punkaze"
+  },
+  "homepage": "https://github.com/punkaze/punkaze-skills",
+  "repository": "https://github.com/punkaze/punkaze-skills",
+  "license": "Apache-2.0"
+}

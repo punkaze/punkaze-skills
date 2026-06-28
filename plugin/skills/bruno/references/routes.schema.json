@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Bruno generator routes manifest",
+  "type": "object",
+  "required": ["name", "baseUrl", "routes"],
+  "properties": {
+    "name": { "type": "string" },
+    "baseUrl": { "type": "string" },
+    "ignore": { "type": "array", "items": { "type": "string" } },
+    "auth": {
+      "type": "object",
+      "properties": { "type": { "enum": ["none", "bearer", "basic"] } }
+    },
+    "environments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "baseUrl"],
+        "properties": {
+          "name": { "type": "string" },
+          "baseUrl": { "type": "string" },
+          "vars": { "type": "object" },
+          "secretVars": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "routes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["method", "path", "name"],
+        "properties": {
+          "method": { "enum": ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"] },
+          "path": { "type": "string", "description": "Use :param for path params, e.g. /users/:id" },
+          "name": { "type": "string" },
+          "folder": { "type": "string" },
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "query": { "type": "object" },
+          "headers": { "type": "object" },
+          "body": { "type": "object" },
+          "auth": { "description": "true=inherit, false=none, or 'bearer'|'basic'|'inherit'|'none'" },
+          "script": { "enum": ["token-capture"] },
+          "tests": { "type": "array", "items": { "enum": ["status-200", "status-201", "status-2xx"] } },
+          "docs": { "type": "string" }
+        }
+      }
+    }
+  }
+}

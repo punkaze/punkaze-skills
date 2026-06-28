@@ -1,0 +1,19 @@
+{
+  "name": "Sample API",
+  "baseUrl": "https://echo.usebruno.com",
+  "auth": { "type": "bearer" },
+  "ignore": ["node_modules", ".git"],
+  "environments": [
+    { "name": "dev", "baseUrl": "https://echo.usebruno.com", "secretVars": ["authToken"] }
+  ],
+  "routes": [
+    { "method": "POST", "path": "/auth/login", "name": "Login",
+      "body": { "email": "user@example.com", "password": "secret" },
+      "auth": false, "script": "token-capture", "tests": ["status-2xx"],
+      "docs": "Authenticate and capture the token." },
+    { "method": "GET", "path": "/users", "name": "List Users",
+      "query": { "page": 1, "limit": 10 }, "auth": true, "tests": ["status-2xx"] },
+    { "method": "GET", "path": "/users/:id", "name": "Get User",
+      "auth": true, "tests": ["status-2xx"] }
+  ]
+}

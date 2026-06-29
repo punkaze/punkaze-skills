@@ -1,0 +1,26 @@
+{
+  "project": "example",
+  "remoteMatch": "github.com:acme/myapp",
+  "baseBranch": "develop",
+  "branchPrefixes": ["feature", "fix", "chore"],
+  "parentHint": null,
+  "repos": [
+    { "key": "api", "dir": "myapp-api", "install": "npm install", "envFiles": [".env", ".env.local"], "role": "REST API backend" },
+    { "key": "web", "dir": "myapp-web", "install": "pnpm install", "envFiles": [".env.local"], "role": "Frontend (Next.js)" }
+  ],
+  "coupling": [
+    {
+      "repos": ["api", "web"],
+      "sharedSurface": "HTTP API contract — endpoint paths, request/response field names and types, and status/error codes the web app consumes.",
+      "grep": ["src/routes", "src/types"],
+      "contractPath": "../myapp-openapi/openapi.yaml",
+      "notes": "Dual only when the wire shape changes. A pure backend refactor that keeps every response identical is api-only."
+    }
+  ],
+  "neverCouple": [],
+  "notes": "This is a sample. For a single-repo project, drop a .worktree.json at the repo root instead of adding a registry file. For multi-repo projects, put your real config in $CLAUDE_PLUGIN_DATA/projects/<name>.json (persists across plugin updates) or set WORKTREE_REGISTRY_DIR.",
+  "caveats": [
+    "Env files are copied point-in-time, not symlinked — re-copy after edits, or use --no-env.",
+    "A worktree dev server may collide on the same PORT as the main checkout — change it or stop the other."
+  ]
+}

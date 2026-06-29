@@ -2,12 +2,13 @@
 
 A personal collection of [Agent Skills](https://code.claude.com/docs/en/skills) for Claude Code, packaged as an installable plugin.
 
-Currently ships two skills:
+Currently ships three skills:
 
 | Skill | What it does |
 | :---- | :----------- |
 | **bruno** | Author, generate, and run [Bruno](https://www.usebruno.com/) `.bru` API collections — with a zero-dependency collection generator and `.bru`/CLI syntax verified against Bruno **3.5.0**. |
 | **hetzner-server-provision** | Provision a [Hetzner Cloud](https://www.hetzner.com/cloud) server end-to-end via the `hcloud` CLI — pick type/location, create a firewall (SSH locked to your IP), boot the server, and install Docker + Nginx + Certbot on a hardened, key-only box. |
+| **worktree-setup** | Spin up isolated git worktree(s) for a task on any project — config-driven, deciding single vs dual/multi-repo scope (identical branch names on coupled repos), cutting from the right base branch, copying env files, and running the right install command. |
 
 ## Install
 
@@ -21,6 +22,7 @@ Then invoke a skill by its namespaced name, e.g.:
 ```text
 /skills:bruno
 /skills:hetzner-server-provision
+/skills:worktree-setup
 ```
 
 (Claude also invokes skills automatically when a task matches their description.)
@@ -96,6 +98,38 @@ Requires the `hcloud` CLI (`brew install hcloud`) and a Hetzner API token via `H
 plugin/skills/hetzner-server-provision/scripts/list-server-types.sh --location hel1
 plugin/skills/hetzner-server-provision/scripts/provision.sh \
   --name my-app-dev --type cx23 --ssh-key-file ~/.ssh/id_ed25519.pub
+```
+
+## The `worktree-setup` skill
+
+Spin up isolated [git worktree(s)](https://git-scm.com/docs/git-worktree) for a task on **any** project, driven by a small per-project config:
+
+- **Decides scope** — single vs dual/multi-repo. When a change touches a declared shared surface (e.g. an API contract or shared schema across sibling repos), it creates a worktree in each coupled repo with the **same branch name**; otherwise just one.
+- **Config-driven** — a zero-dependency Node resolver picks the right config for the current repo: an in-repo `.worktree.json` (single-repo projects) or a registry under `${CLAUDE_PLUGIN_DATA}/projects/` (multi-repo; persists across plugin updates, override with `WORKTREE_REGISTRY_DIR`). See [`projects/example.json`](plugin/skills/worktree-setup/projects/example.json) for the format.
+- **Safe mechanics** — cuts from `origin/<base>` so the main checkout's branch is never touched, unsets upstream, copies the configured (gitignored) env files, and runs the configured install command.
+- **Init flow** — in an unconfigured repo, it detects sibling repos, base branch, and install command, then writes a config after you confirm.
+
+Skill contents live in [`plugin/skills/worktree-setup/`](plugin/skills/worktree-setup):
+
+```
+plugin/skills/worktree-setup/
+├── SKILL.md
+├── scripts/
+│   ├── new-worktree.sh         # config-driven engine (one repo per call)
+│   ├── resolve-config.mjs      # resolve / repo / guard (zero deps)
+│   ├── resolve-config.test.mjs # node:test
+│   └── engine-smoke.test.sh    # real worktree against a temp origin
+├── references/
+│   └── worktree.schema.json    # config contract
+└── projects/
+    └── example.json            # sanitized sample config
+```
+
+### Run the tests
+
+```bash
+node --test plugin/skills/worktree-setup/scripts/resolve-config.test.mjs
+plugin/skills/worktree-setup/scripts/engine-smoke.test.sh
 ```
 
 ## License

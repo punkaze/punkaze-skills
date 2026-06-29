@@ -10,7 +10,7 @@
     {
       "name": "skills",
       "source": "./plugin",
-      "description": "punkaze's agent skills collection. Currently ships the bruno skill (author, generate, and run Bruno .bru API collections)."
+      "description": "punkaze's agent skills collection. Ships the bruno skill (author, generate, and run Bruno .bru API collections) and hetzner-server-provision (provision a hardened Hetzner Cloud server end-to-end via the hcloud CLI)."
     }
   ]
 }

@@ -32,16 +32,17 @@ Look for a spec first: `openapi.yaml`, `swagger.json`, an Elysia/Swagger
 endpoint, NestJS `@nestjs/swagger` output, etc. `-g path|tags` controls grouping.
 
 **Path B — no spec.** Read the codebase, produce a **routes manifest** that
-conforms to `references/routes.schema.json`, then run the bundled generator:
+conforms to `${CLAUDE_PLUGIN_ROOT}/skills/bruno/references/routes.schema.json`,
+then run the bundled generator:
 ```bash
-node scripts/generate-bruno.mjs --manifest routes.json --out ./api-collection
+node "${CLAUDE_PLUGIN_ROOT}/skills/bruno/scripts/generate-bruno.mjs" --manifest routes.json --out ./api-collection
 ```
 Flags: `--force` (overwrite existing files), `--dry-run` (preview, write nothing).
 
 Do **not** write a per-framework regex route scanner — extract routes by reading
 the code, then hand the manifest to the generator.
 
-### Manifest shape (see references/routes.schema.json)
+### Manifest shape (see `${CLAUDE_PLUGIN_ROOT}/skills/bruno/references/routes.schema.json`)
 
 ```json
 {

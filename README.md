@@ -157,7 +157,8 @@ Skill contents live in [`plugin/skills/free-disk-space/`](plugin/skills/free-dis
 plugin/skills/free-disk-space/
 ├── SKILL.md
 └── scripts/
-    └── scan.sh   # read-only OS-aware scanner (macOS/Linux), structured output
+    ├── scan.sh             # read-only OS-aware scanner (macOS/Linux), structured output
+    └── scan-smoke.test.sh  # hermetic smoke test (fakes $HOME; asserts the report contract)
 ```
 
 ### Run the scanner
@@ -165,6 +166,12 @@ plugin/skills/free-disk-space/
 ```bash
 # defaults to scanning $HOME; pass a narrower root for a faster project scan
 plugin/skills/free-disk-space/scripts/scan.sh ~/projects
+```
+
+### Run the test
+
+```bash
+plugin/skills/free-disk-space/scripts/scan-smoke.test.sh
 ```
 
 ## License

@@ -105,9 +105,9 @@ export function renderRequest(route, seq, manifest = {}) {
   }
 
   if (route.script === "token-capture") {
-    // Use bru.setVar (runtime-only) so the captured token is NEVER written to
-    // disk. bru.setEnvVar(..., {persist:true}) would persist a secret to the
-    // environment file (and in Bruno v4, setEnvVar persists by default).
+    // Use bru.setVar (runtime-only) so the captured token is never written to
+    // disk — unlike an env var, which the Bruno GUI can save into a committed
+    // environment file.
     L.push("script:post-response {");
     L.push("  if (res.status >= 200 && res.status < 300 && res.body && res.body.token) {");
     L.push('    bru.setVar("authToken", res.body.token);');
@@ -154,11 +154,26 @@ export function renderFolder(name) {
   return `meta {\n  name: ${cap(name)}\n}\n`;
 }
 
+// collection.bru at the root is what `auth: inherit` in child requests
+// resolves against — without it, "inherited" requests send no auth at all.
+export function renderCollectionBru(manifest) {
+  const type = (manifest.auth && manifest.auth.type) || "none";
+  const L = ["meta {", `  name: ${manifest.name}`, "}", ""];
+  L.push("auth {", `  mode: ${type}`, "}");
+  if (type === "bearer") {
+    L.push("", "auth:bearer {", "  token: {{authToken}}", "}");
+  } else if (type === "basic") {
+    L.push("", "auth:basic {", "  username: {{username}}", "  password: {{password}}", "}");
+  }
+  return L.join("\n") + "\n";
+}
+
 // ---------- assembler ----------
 
 export function buildCollection(manifest) {
   const files = {};
   files["bruno.json"] = renderBrunoJson(manifest);
+  files["collection.bru"] = renderCollectionBru(manifest);
   for (const env of manifest.environments || []) {
     files[`environments/${env.name}.bru`] = renderEnvironment(env);
   }

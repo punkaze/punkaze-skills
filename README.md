@@ -36,12 +36,18 @@ claude --plugin-dir ./punkaze-skills/plugin
 
 ## The `bruno` skill
 
-Helps you work with Bruno, the open-source, Git-friendly API client, and its CLI (`bru`):
+Helps you work with [Bruno](https://www.usebruno.com/), the open-source, Git-friendly API client, and its CLI (`bru`). Every command and syntax rule in the skill is verified against a real **bru 3.5.0** install.
 
-- **Generate collections** two ways — `bru import openapi` when a spec exists, or a bundled zero-dependency Node generator (`generate-bruno.mjs`) fed by a routes manifest you describe.
-- **Correct `.bru` syntax** verified against the official Bruno repo: `params:query`, `:param` + `params:path`, `auth: inherit`, `vars:secret`, `body:json`, `tests`, `docs`.
-- **Safe by default** — captured tokens use `bru.setVar` (runtime-only, never written to disk); documents the CLI `--sandbox safe` default.
-- **CI-ready** `bru run` guidance (JUnit/HTML reporters, `--bail`, `--tests-only`, tags).
+What it can do:
+
+- **Author and edit `.bru` files** — requests, headers, `body:json`, post-response scripts, `tests`, and `docs` blocks, with the modern syntax agents usually get wrong: `params:query` (not legacy `query { }`), `:param` in the URL + `params:path` (not `{{param}}` substitution), and `auth: inherit` backed by collection-level auth in `collection.bru`.
+- **Generate a collection from an OpenAPI/Swagger spec** — `bru import openapi … --collection-format bru` (the flag matters: the CLI default emits opencollection `.yml` files, not a `.bru` collection).
+- **Generate a collection straight from code** — no spec needed. Describe the API as a routes manifest ([`routes.schema.json`](plugin/skills/bruno/references/routes.schema.json)); the bundled zero-dependency generator emits `bruno.json`, `collection.bru` with collection-level auth, per-resource folders, requests, environments, a login token-capture script, and status-code test presets.
+- **Write test and script blocks** — `test()`/`expect()` assertions, post-response scripts, and chaining values between requests (e.g. capture a login token, reuse it on later requests).
+- **Manage environments and secrets safely** — environment `.bru` files, `vars:secret` (names on disk, never values), `bru.setVar` for runtime-only tokens, and `--env-var KEY=$SHELL_VAR` so secrets stay out of shell history.
+- **Run collections locally or in CI** — `bru run` recipes: recursive runs, env selection/overrides, JUnit/HTML reporters, `--bail --tests-only` for CI gates, tag filtering, CSV/JSON data-driven iterations, and the `--sandbox safe` default explained.
+
+The generated auth chain is tested end-to-end against a live server: login → `bru.setVar("authToken")` → `{{authToken}}` in `collection.bru` → `auth: inherit` on child requests.
 
 Skill contents live in [`plugin/skills/bruno/`](plugin/skills/bruno):
 
@@ -53,8 +59,7 @@ plugin/skills/bruno/
 │   └── generate-bruno.test.mjs   # node:test suite
 └── references/
     ├── routes.schema.json        # manifest contract
-    ├── sample-manifest.json
-    └── examples/                 # verified .bru output samples
+    └── sample-manifest.json      # full manifest example
 ```
 
 ### Run the generator

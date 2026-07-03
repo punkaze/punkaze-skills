@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {
   slug, pathParams, resourceOf, groupRoutes, resolveAuth,
   renderRequest, renderEnvironment, renderBrunoJson, renderFolder,
-  buildCollection, writeCollection, parseArgs,
+  renderCollectionBru, buildCollection, writeCollection, parseArgs,
 } from "./generate-bruno.mjs";
 import { mkdtempSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -125,6 +125,27 @@ test("renderFolder capitalizes name", () => {
   assert.match(renderFolder("users"), /meta \{\n {2}name: Users\n\}/);
 });
 
+// ---------- collection.bru ----------
+
+test("renderCollectionBru emits bearer auth for the collection root", () => {
+  const out = renderCollectionBru({ name: "My API", auth: { type: "bearer" } });
+  assert.match(out, /meta \{\n {2}name: My API\n\}/);
+  assert.match(out, /auth \{\n {2}mode: bearer\n\}/);
+  assert.match(out, /auth:bearer \{\n {2}token: \{\{authToken\}\}\n\}/);
+});
+
+test("renderCollectionBru emits basic auth with username/password vars", () => {
+  const out = renderCollectionBru({ name: "My API", auth: { type: "basic" } });
+  assert.match(out, /auth \{\n {2}mode: basic\n\}/);
+  assert.match(out, /auth:basic \{\n {2}username: \{\{username\}\}\n {2}password: \{\{password\}\}\n\}/);
+});
+
+test("renderCollectionBru defaults to mode none without manifest auth", () => {
+  const out = renderCollectionBru({ name: "My API" });
+  assert.match(out, /auth \{\n {2}mode: none\n\}/);
+  assert.doesNotMatch(out, /auth:bearer/);
+});
+
 // ---------- assembler / writer / CLI ----------
 
 const MANIFEST = {
@@ -142,6 +163,8 @@ test("buildCollection returns expected file map", () => {
   const files = buildCollection(MANIFEST);
   const keys = Object.keys(files);
   assert.ok(keys.includes("bruno.json"));
+  assert.ok(keys.includes("collection.bru"));
+  assert.match(files["collection.bru"], /mode: bearer/);
   assert.ok(keys.includes("environments/dev.bru"));
   assert.ok(keys.includes("auth/folder.bru"));
   assert.ok(keys.includes("auth/login.bru"));

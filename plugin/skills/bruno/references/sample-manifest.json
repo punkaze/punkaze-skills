@@ -1,10 +1,10 @@
 {
   "name": "Sample API",
-  "baseUrl": "https://echo.usebruno.com",
+  "baseUrl": "http://localhost:3000",
   "auth": { "type": "bearer" },
   "ignore": ["node_modules", ".git"],
   "environments": [
-    { "name": "dev", "baseUrl": "https://echo.usebruno.com", "secretVars": ["authToken"] }
+    { "name": "dev", "baseUrl": "http://localhost:3000", "secretVars": ["authToken"] }
   ],
   "routes": [
     { "method": "POST", "path": "/auth/login", "name": "Login",

@@ -53,8 +53,7 @@ plugin/skills/bruno/
 │   └── generate-bruno.test.mjs   # node:test suite
 └── references/
     ├── routes.schema.json        # manifest contract
-    ├── sample-manifest.json
-    └── examples/                 # verified .bru output samples
+    └── sample-manifest.json      # full manifest example
 ```
 
 ### Run the generator

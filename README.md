@@ -2,13 +2,14 @@
 
 A personal collection of [Agent Skills](https://code.claude.com/docs/en/skills) for Claude Code, packaged as an installable plugin.
 
-Currently ships three skills:
+Currently ships four skills:
 
 | Skill | What it does |
 | :---- | :----------- |
 | **bruno** | Author, generate, and run [Bruno](https://www.usebruno.com/) `.bru` API collections — with a zero-dependency collection generator and `.bru`/CLI syntax verified against Bruno **3.5.0**. |
 | **hetzner-server-provision** | Provision a [Hetzner Cloud](https://www.hetzner.com/cloud) server end-to-end via the `hcloud` CLI — pick type/location, create a firewall (SSH locked to your IP), boot the server, and install Docker + Nginx + Certbot on a hardened, key-only box. |
 | **worktree-setup** | Spin up isolated git worktree(s) for a task on any project — config-driven, deciding single vs dual/multi-repo scope (identical branch names on coupled repos), cutting from the right base branch, copying env files, and running the right install command. |
+| **free-disk-space** | Find what's safe to delete to reclaim disk space on macOS/Linux and hand you copy-paste cleanup commands, sorted by reclaimable size with a per-row safety flag. Read-only by default — it investigates and reports, never deleting anything on its own. |
 
 ## Install
 
@@ -23,6 +24,7 @@ Then invoke a skill by its namespaced name, e.g.:
 /skills:bruno
 /skills:hetzner-server-provision
 /skills:worktree-setup
+/skills:free-disk-space
 ```
 
 (Claude also invokes skills automatically when a task matches their description.)
@@ -135,6 +137,46 @@ plugin/skills/worktree-setup/
 ```bash
 node --test plugin/skills/worktree-setup/scripts/resolve-config.test.mjs
 plugin/skills/worktree-setup/scripts/engine-smoke.test.sh
+```
+
+## The `free-disk-space` skill
+
+Find what's safe to delete to reclaim disk space on **macOS or Linux**, and get
+copy-paste cleanup commands — without an agent deleting anything for you:
+
+- **Read-only investigation** — an OS-detecting scanner (`scan.sh`) emits a
+  structured report: free space (from the right volume), the biggest reclaimable
+  locations, umbrella cache totals, and project `node_modules` / stale worktrees.
+- **One flat report table** — `What · Path · Reclaim · Impact · How to clear ·
+  Safety`, sorted by reclaimable size, with a 🟢/🟡/🟠 safety flag per row.
+- **Accurate sizes** — each row is measured at the exact path its command clears;
+  partial cleaners (prune/uninstall) are marked, and umbrella totals are kept
+  separate so nothing is double-counted.
+- **Never deletes on its own** — the skill investigates and hands over commands.
+  If asked to delete, it explains why an agent shouldn't, and only ever proceeds
+  through an explicit per-step permission gate that holds even in auto-accept mode.
+
+Skill contents live in [`plugin/skills/free-disk-space/`](plugin/skills/free-disk-space):
+
+```
+plugin/skills/free-disk-space/
+├── SKILL.md
+└── scripts/
+    ├── scan.sh             # read-only OS-aware scanner (macOS/Linux), structured output
+    └── scan-smoke.test.sh  # hermetic smoke test (fakes $HOME; asserts the report contract)
+```
+
+### Run the scanner
+
+```bash
+# defaults to scanning $HOME; pass a narrower root for a faster project scan
+plugin/skills/free-disk-space/scripts/scan.sh ~/projects
+```
+
+### Run the test
+
+```bash
+plugin/skills/free-disk-space/scripts/scan-smoke.test.sh
 ```
 
 ## License

@@ -1,4 +1,4 @@
-# punkaze-skills
+# skills
 
 A personal collection of [Agent Skills](https://code.claude.com/docs/en/skills) for Claude Code, packaged as an installable plugin.
 
@@ -14,7 +14,7 @@ Currently ships four skills:
 ## Install
 
 ```text
-/plugin marketplace add punkaze/punkaze-skills
+/plugin marketplace add punkaze/skills
 /plugin install skills@punkaze
 ```
 
@@ -29,11 +29,24 @@ Then invoke a skill by its namespaced name, e.g.:
 
 (Claude also invokes skills automatically when a task matches their description.)
 
+### Install a single skill
+
+The plugin installs all skills together. To install just one, copy its folder into
+`~/.claude/skills/` — swap `bruno` for any skill name from the table above:
+
+```bash
+mkdir -p ~/.claude/skills
+curl -sL https://github.com/punkaze/skills/archive/main.tar.gz \
+  | tar -xz -C ~/.claude/skills --strip-components=3 skills-main/plugin/skills/bruno
+```
+
+Skills installed this way are invoked without the plugin namespace, e.g. `/bruno`.
+
 ### Try it without installing
 
 ```bash
-git clone https://github.com/punkaze/punkaze-skills
-claude --plugin-dir ./punkaze-skills/plugin
+git clone https://github.com/punkaze/skills
+claude --plugin-dir ./skills/plugin
 ```
 
 ## The `bruno` skill

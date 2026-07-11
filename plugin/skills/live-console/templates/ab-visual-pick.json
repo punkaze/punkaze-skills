@@ -1,0 +1,17 @@
+{
+  "_about": "Compare rendered options (HTML snippets or images) side by side; pick one + comment each.",
+  "title": "Pick a direction",
+  "instructions": "Compare the options, choose the one you prefer, and leave notes on any of them.",
+  "items": [
+    {
+      "id": "layout",
+      "title": "Which layout?",
+      "visualLabel": "Choose one and comment",
+      "visuals": [
+        { "id": "a", "label": "Option A — sidebar left", "html": "<div style=\"display:flex;height:120px;font:12px sans-serif\"><div style=\"width:70px;background:#c7d2fe\"></div><div style=\"flex:1;background:#eef2ff\"></div></div>" },
+        { "id": "b", "label": "Option B — sidebar right", "html": "<div style=\"display:flex;height:120px;font:12px sans-serif\"><div style=\"flex:1;background:#eef2ff\"></div><div style=\"width:70px;background:#c7d2fe\"></div></div>" },
+        { "id": "c", "label": "Option C — from a screenshot", "image": "assets/option-c.png" }
+      ]
+    }
+  ]
+}

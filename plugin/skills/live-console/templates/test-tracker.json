@@ -1,0 +1,28 @@
+{
+  "_about": "Pass/fail/skip checklist with a note per item — manual test runs, QA sweeps. TC-02 shows an optional reference screenshot via visuals[] instead of prose steps.",
+  "title": "Manual test tracker",
+  "instructions": "Mark each case pass / fail / skip and add notes. Everything auto-saves; click Submit when finished.",
+  "items": [
+    {
+      "id": "TC-01",
+      "title": "First test case",
+      "body": "Steps: …\nExpected: …",
+      "fields": [
+        { "type": "toggle", "key": "status", "options": ["pass", "fail", "skip"] },
+        { "type": "comment", "key": "note", "placeholder": "What you observed, deviations, bugs…" }
+      ]
+    },
+    {
+      "id": "TC-02",
+      "title": "Second test case — compare against expected screenshot",
+      "visualLabel": "Expected result",
+      "visuals": [
+        { "id": "expected", "label": "Expected state", "image": "assets/tc-02-expected.png" }
+      ],
+      "fields": [
+        { "type": "toggle", "key": "status", "options": ["pass", "fail", "skip"] },
+        { "type": "comment", "key": "note", "placeholder": "What you observed, deviations, bugs…" }
+      ]
+    }
+  ]
+}

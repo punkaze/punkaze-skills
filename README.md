@@ -2,7 +2,7 @@
 
 A personal collection of [Agent Skills](https://code.claude.com/docs/en/skills) for Claude Code, packaged as an installable plugin.
 
-Currently ships four skills:
+Currently ships five skills:
 
 | Skill | What it does |
 | :---- | :----------- |
@@ -10,6 +10,7 @@ Currently ships four skills:
 | **hetzner-server-provision** | Provision a [Hetzner Cloud](https://www.hetzner.com/cloud) server end-to-end via the `hcloud` CLI — pick type/location, create a firewall (SSH locked to your IP), boot the server, and install Docker + Nginx + Certbot on a hardened, key-only box. |
 | **worktree-setup** | Spin up isolated git worktree(s) for a task on any project — config-driven, deciding single vs dual/multi-repo scope (identical branch names on coupled repos), cutting from the right base branch, copying env files, and running the right install command. |
 | **free-disk-space** | Find what's safe to delete to reclaim disk space on macOS/Linux and hand you copy-paste cleanup commands, sorted by reclaimable size with a per-row safety flag. Read-only by default — it investigates and reports, never deleting anything on its own. |
+| **live-console** | Spin up a zero-dependency local web console from a declarative JSON spec — pass/fail/skip, ratings, rankings, pick-one comparisons, and diagram/screenshot review — that persists every response and self-terminates on Submit so you read answers back without copy-paste. |
 
 ## Install
 
@@ -25,6 +26,7 @@ Then invoke a skill by its namespaced name, e.g.:
 /skills:hetzner-server-provision
 /skills:worktree-setup
 /skills:free-disk-space
+/skills:live-console
 ```
 
 (Claude also invokes skills automatically when a task matches their description.)
@@ -190,6 +192,50 @@ plugin/skills/free-disk-space/scripts/scan.sh ~/projects
 
 ```bash
 plugin/skills/free-disk-space/scripts/scan-smoke.test.sh
+```
+
+## The `live-console` skill
+
+Spin up a **console** — a stdlib-only local web app rendered from a declarative
+JSON spec — for structured human review that the agent reads back without
+copy-paste:
+
+- **Zero dependencies** — pure Python stdlib `http.server`; binds `127.0.0.1`
+  only, auto-opens the browser, self-terminates the moment the human clicks
+  **Submit**, so the agent never has to poll.
+- **Five field types** — `toggle` (pass/fail/skip, approve/reject), `comment`,
+  `choice` (single/multi), `rating` (stars/number), `rank` (drag-to-reorder).
+- **Visual-first** — an item's `visuals[]` renders a compare-and-pick grid of
+  images/HTML, or — a single entry — a plain contextual diagram/screenshot.
+  A picture beats a paragraph for anything spatial: a flow, a layout, an
+  architecture.
+- **Raw-HTML escape hatch** — anything the schema can't express drives the
+  same auto-saving store directly through `Console.get/set/submit`.
+- **Auto-saving store** — every change persists to `<spec>.results.json`
+  immediately; `_meta.done` flips to `true` only on Submit, so the file is
+  safely readable mid-session too.
+
+Skill contents live in [`plugin/skills/live-console/`](plugin/skills/live-console):
+
+```
+plugin/skills/live-console/
+├── SKILL.md
+├── AUTHORING.md                     # full spec schema + visual-first authoring guide
+├── scripts/
+│   ├── console_server.py            # the engine (stdlib only, no deps)
+│   └── console-server-smoke.test.sh
+└── templates/
+    ├── test-tracker.json
+    ├── approval-signoff.json
+    ├── ranked-list.json
+    ├── ab-visual-pick.json
+    └── diagram-review.json
+```
+
+### Run the test
+
+```bash
+plugin/skills/live-console/scripts/console-server-smoke.test.sh
 ```
 
 ## License

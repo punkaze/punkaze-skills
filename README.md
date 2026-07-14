@@ -2,7 +2,7 @@
 
 A personal collection of [Agent Skills](https://code.claude.com/docs/en/skills) for Claude Code, packaged as an installable plugin.
 
-Currently ships four skills:
+Currently ships five skills:
 
 | Skill | What it does |
 | :---- | :----------- |
@@ -10,6 +10,7 @@ Currently ships four skills:
 | **hetzner-server-provision** | Provision a [Hetzner Cloud](https://www.hetzner.com/cloud) server end-to-end via the `hcloud` CLI — pick type/location, create a firewall (SSH locked to your IP), boot the server, and install Docker + Nginx + Certbot on a hardened, key-only box. |
 | **worktree-setup** | Spin up isolated git worktree(s) for a task on any project — config-driven, deciding single vs dual/multi-repo scope (identical branch names on coupled repos), cutting from the right base branch, copying env files, and running the right install command. |
 | **free-disk-space** | Find what's safe to delete to reclaim disk space on macOS/Linux and hand you copy-paste cleanup commands, sorted by reclaimable size with a per-row safety flag. Read-only by default — it investigates and reports, never deleting anything on its own. |
+| **tracking-test-cases** | A persistent, branch-scoped pre-PR manual QA checklist — diffs each run against the last one, survives worktree deletion after merge, and hands results back the moment you record a round. |
 
 ## Install
 
@@ -25,6 +26,7 @@ Then invoke a skill by its namespaced name, e.g.:
 /skills:hetzner-server-provision
 /skills:worktree-setup
 /skills:free-disk-space
+/skills:tracking-test-cases
 ```
 
 (Claude also invokes skills automatically when a task matches their description.)
@@ -177,6 +179,47 @@ plugin/skills/free-disk-space/scripts/scan.sh ~/projects
 
 ```bash
 plugin/skills/free-disk-space/scripts/scan-smoke.test.sh
+```
+
+## The `tracking-test-cases` skill
+
+A pre-PR manual QA checklist scoped to the current git branch:
+
+- **Survives worktree deletion** — stored globally at
+  `~/.claude/test-tracking/<repo>/<branch>/`, outside any repo checkout, so
+  results are still there after the branch's worktree is removed post-merge.
+- **Diffs against the last run** — every case shows its own "Last run: X"
+  status inline, so re-running after a fix makes what changed obvious.
+- **Two footer actions, both hand results back** — **Submit** (highlighted)
+  records the round and reopens a fresh console automatically, for testing
+  across several rounds in one sitting; **Done & close** (confirm dialog)
+  records the same way and ends the session. Either one exits the server,
+  which is the agent's signal to read the new run back — no polling.
+- **Full reset every round** — status, notes, and attachments all start
+  blank each round, so a case can't silently coast on a stale "pass"; the
+  complete record from every round lives forever in its own `runs/` snapshot.
+- **Attachments via drag-and-drop** — drop a log/screenshot/JSON file onto a
+  note field and it's embedded directly (text gets a truncated preview,
+  images a thumbnail, anything else a filename card) — browsers don't expose
+  a dropped file's real path, so embedding the content is the honest option.
+
+Skill contents live in [`plugin/skills/tracking-test-cases/`](plugin/skills/tracking-test-cases):
+
+```
+plugin/skills/tracking-test-cases/
+├── SKILL.md
+└── scripts/
+    ├── base_branch.py               # resolve repo/branch identity + base branch
+    ├── tracker_server.py            # the engine (stdlib only, no deps)
+    ├── base-branch-smoke.test.py
+    └── tracker-server-smoke.test.sh
+```
+
+### Run the tests
+
+```bash
+python3 plugin/skills/tracking-test-cases/scripts/base-branch-smoke.test.py
+plugin/skills/tracking-test-cases/scripts/tracker-server-smoke.test.sh
 ```
 
 ## License

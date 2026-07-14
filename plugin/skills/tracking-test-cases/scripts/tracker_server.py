@@ -15,7 +15,7 @@ Usage:
     python3 tracker_server.py <storage_dir> [--port N] [--no-open]
 
 <storage_dir> MUST already contain cases.json — this script does not create
-it (the calling agent authors it, same division of labor as live-console).
+it (the calling agent authors it).
 
 Layout inside <storage_dir>:
     cases.json           - the case list (never modified by this script)

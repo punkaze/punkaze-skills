@@ -1,8 +1,8 @@
-# punkaze-skills
+# skills
 
 A personal collection of [Agent Skills](https://code.claude.com/docs/en/skills) for Claude Code, packaged as an installable plugin.
 
-Currently ships four skills:
+Currently ships six skills:
 
 | Skill | What it does |
 | :---- | :----------- |
@@ -10,11 +10,13 @@ Currently ships four skills:
 | **hetzner-server-provision** | Provision a [Hetzner Cloud](https://www.hetzner.com/cloud) server end-to-end via the `hcloud` CLI — pick type/location, create a firewall (SSH locked to your IP), boot the server, and install Docker + Nginx + Certbot on a hardened, key-only box. |
 | **worktree-setup** | Spin up isolated git worktree(s) for a task on any project — config-driven, deciding single vs dual/multi-repo scope (identical branch names on coupled repos), cutting from the right base branch, copying env files, and running the right install command. |
 | **free-disk-space** | Find what's safe to delete to reclaim disk space on macOS/Linux and hand you copy-paste cleanup commands, sorted by reclaimable size with a per-row safety flag. Read-only by default — it investigates and reports, never deleting anything on its own. |
+| **live-console** | Spin up a zero-dependency local web console from a declarative JSON spec — pass/fail/skip, ratings, rankings, pick-one comparisons, and diagram/screenshot review — that persists every response and self-terminates on Submit so you read answers back without copy-paste. |
+| **tracking-test-cases** | A persistent, branch-scoped pre-PR manual QA checklist — diffs each run against the last one, survives worktree deletion after merge, and hands results back the moment you record a round. |
 
 ## Install
 
 ```text
-/plugin marketplace add punkaze/punkaze-skills
+/plugin marketplace add punkaze/skills
 /plugin install skills@punkaze
 ```
 
@@ -25,15 +27,30 @@ Then invoke a skill by its namespaced name, e.g.:
 /skills:hetzner-server-provision
 /skills:worktree-setup
 /skills:free-disk-space
+/skills:live-console
+/skills:tracking-test-cases
 ```
 
 (Claude also invokes skills automatically when a task matches their description.)
 
+### Install a single skill
+
+The plugin installs all skills together. To install just one, copy its folder into
+`~/.claude/skills/` — swap `bruno` for any skill name from the table above:
+
+```bash
+mkdir -p ~/.claude/skills
+curl -sL https://github.com/punkaze/skills/archive/main.tar.gz \
+  | tar -xz -C ~/.claude/skills --strip-components=3 skills-main/plugin/skills/bruno
+```
+
+Skills installed this way are invoked without the plugin namespace, e.g. `/bruno`.
+
 ### Try it without installing
 
 ```bash
-git clone https://github.com/punkaze/punkaze-skills
-claude --plugin-dir ./punkaze-skills/plugin
+git clone https://github.com/punkaze/skills
+claude --plugin-dir ./skills/plugin
 ```
 
 ## The `bruno` skill
@@ -177,6 +194,91 @@ plugin/skills/free-disk-space/scripts/scan.sh ~/projects
 
 ```bash
 plugin/skills/free-disk-space/scripts/scan-smoke.test.sh
+```
+
+## The `live-console` skill
+
+Spin up a **console** — a stdlib-only local web app rendered from a declarative
+JSON spec — for structured human review that the agent reads back without
+copy-paste:
+
+- **Zero dependencies** — pure Python stdlib `http.server`; binds `127.0.0.1`
+  only, auto-opens the browser, self-terminates the moment the human clicks
+  **Submit**, so the agent never has to poll.
+- **Five field types** — `toggle` (pass/fail/skip, approve/reject), `comment`,
+  `choice` (single/multi), `rating` (stars/number), `rank` (drag-to-reorder).
+- **Visual-first** — an item's `visuals[]` renders a compare-and-pick grid of
+  images/HTML, or — a single entry — a plain contextual diagram/screenshot.
+  A picture beats a paragraph for anything spatial: a flow, a layout, an
+  architecture.
+- **Raw-HTML escape hatch** — anything the schema can't express drives the
+  same auto-saving store directly through `Console.get/set/submit`.
+- **Auto-saving store** — every change persists to `<spec>.results.json`
+  immediately; `_meta.done` flips to `true` only on Submit, so the file is
+  safely readable mid-session too.
+
+Skill contents live in [`plugin/skills/live-console/`](plugin/skills/live-console):
+
+```
+plugin/skills/live-console/
+├── SKILL.md
+├── AUTHORING.md                     # full spec schema + visual-first authoring guide
+├── scripts/
+│   ├── console_server.py            # the engine (stdlib only, no deps)
+│   └── console-server-smoke.test.sh
+└── templates/
+    ├── test-tracker.json
+    ├── approval-signoff.json
+    ├── ranked-list.json
+    ├── ab-visual-pick.json
+    └── diagram-review.json
+```
+
+### Run the test
+
+```bash
+plugin/skills/live-console/scripts/console-server-smoke.test.sh
+```
+
+## The `tracking-test-cases` skill
+
+A pre-PR manual QA checklist scoped to the current git branch:
+
+- **Survives worktree deletion** — stored globally at
+  `~/.claude/test-tracking/<repo>/<branch>/`, outside any repo checkout, so
+  results are still there after the branch's worktree is removed post-merge.
+- **Diffs against the last run** — every case shows its own "Last run: X"
+  status inline, so re-running after a fix makes what changed obvious.
+- **Two footer actions, both hand results back** — **Submit** (highlighted)
+  records the round and reopens a fresh console automatically, for testing
+  across several rounds in one sitting; **Done & close** (confirm dialog)
+  records the same way and ends the session. Either one exits the server,
+  which is the agent's signal to read the new run back — no polling.
+- **Full reset every round** — status, notes, and attachments all start
+  blank each round, so a case can't silently coast on a stale "pass"; the
+  complete record from every round lives forever in its own `runs/` snapshot.
+- **Attachments via drag-and-drop** — drop a log/screenshot/JSON file onto a
+  note field and it's embedded directly (text gets a truncated preview,
+  images a thumbnail, anything else a filename card) — browsers don't expose
+  a dropped file's real path, so embedding the content is the honest option.
+
+Skill contents live in [`plugin/skills/tracking-test-cases/`](plugin/skills/tracking-test-cases):
+
+```
+plugin/skills/tracking-test-cases/
+├── SKILL.md
+└── scripts/
+    ├── base_branch.py               # resolve repo/branch identity + base branch
+    ├── tracker_server.py            # the engine (stdlib only, no deps)
+    ├── base-branch-smoke.test.py
+    └── tracker-server-smoke.test.sh
+```
+
+### Run the tests
+
+```bash
+python3 plugin/skills/tracking-test-cases/scripts/base-branch-smoke.test.py
+plugin/skills/tracking-test-cases/scripts/tracker-server-smoke.test.sh
 ```
 
 ## License

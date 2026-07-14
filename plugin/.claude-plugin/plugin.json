@@ -1,11 +1,11 @@
 {
   "name": "skills",
-  "description": "punkaze's agent skills collection. Ships bruno (author, generate, and run Bruno .bru API collections), hetzner-server-provision (provision a hardened, key-only Hetzner Cloud server end-to-end via the hcloud CLI), worktree-setup (config-driven git worktree setup with single/dual-repo scope splitting), and free-disk-space (find reclaimable disk space on macOS/Linux and hand over copy-paste cleanup commands, read-only and never deletes on its own).",
-  "version": "1.3.0",
+  "description": "punkaze's agent skills collection. Ships bruno (author, generate, and run Bruno .bru API collections), hetzner-server-provision (provision a hardened, key-only Hetzner Cloud server end-to-end via the hcloud CLI), worktree-setup (config-driven git worktree setup with single/dual-repo scope splitting), free-disk-space (find reclaimable disk space on macOS/Linux and hand over copy-paste cleanup commands, read-only and never deletes on its own), live-console (spin up a zero-dependency local web console from a declarative JSON spec for structured human review, with visual-first diagram/screenshot support), and tracking-test-cases (a persistent, branch-scoped pre-PR manual QA checklist that diffs each run against the last one and survives worktree deletion after merge).",
+  "version": "1.5.0",
   "author": {
     "name": "punkaze"
   },
-  "homepage": "https://github.com/punkaze/punkaze-skills",
-  "repository": "https://github.com/punkaze/punkaze-skills",
+  "homepage": "https://github.com/punkaze/skills",
+  "repository": "https://github.com/punkaze/skills",
   "license": "Apache-2.0"
 }

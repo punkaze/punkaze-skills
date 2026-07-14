@@ -10,7 +10,7 @@
     {
       "name": "skills",
       "source": "./plugin",
-      "description": "punkaze's agent skills collection. Ships bruno (author, generate, and run Bruno .bru API collections), hetzner-server-provision (provision a hardened Hetzner Cloud server end-to-end via the hcloud CLI), worktree-setup (config-driven git worktree setup with single/dual-repo scope splitting), and free-disk-space (find reclaimable disk space on macOS/Linux and hand over copy-paste cleanup commands, read-only)."
+      "description": "punkaze's agent skills collection. Ships bruno (author, generate, and run Bruno .bru API collections), hetzner-server-provision (provision a hardened Hetzner Cloud server end-to-end via the hcloud CLI), worktree-setup (config-driven git worktree setup with single/dual-repo scope splitting), free-disk-space (find reclaimable disk space on macOS/Linux and hand over copy-paste cleanup commands, read-only), live-console (spin up a zero-dependency local web console from a declarative JSON spec for structured human review, with visual-first diagram/screenshot support), and tracking-test-cases (a persistent, branch-scoped pre-PR manual QA checklist that diffs each run against the last one and survives worktree deletion after merge)."
     }
   ]
 }

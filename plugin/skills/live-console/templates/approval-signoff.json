@@ -1,0 +1,30 @@
+{
+  "_about": "Approve/reject each item with a confidence rating and notes — sign-offs. item-2 shows signing off on a diagram/mock via visuals[] instead of describing it in prose.",
+  "title": "Sign-off",
+  "instructions": "Approve or reject each item, rate confidence, and leave notes. Submit when done.",
+  "items": [
+    {
+      "id": "item-1",
+      "title": "Thing to approve",
+      "body": "What's being signed off…",
+      "fields": [
+        { "type": "toggle", "key": "status", "options": ["approve", "reject"] },
+        { "type": "rating", "key": "confidence", "label": "Confidence", "max": 5, "style": "stars" },
+        { "type": "comment", "key": "note", "placeholder": "Conditions, blockers, remarks…" }
+      ]
+    },
+    {
+      "id": "item-2",
+      "title": "Sign off on this design/architecture diagram",
+      "visualLabel": "Diagram to approve",
+      "visuals": [
+        { "id": "diagram", "label": "Proposed design", "image": "assets/item-2-diagram.png" }
+      ],
+      "fields": [
+        { "type": "toggle", "key": "status", "options": ["approve", "reject"] },
+        { "type": "rating", "key": "confidence", "label": "Confidence", "max": 5, "style": "stars" },
+        { "type": "comment", "key": "note", "placeholder": "Conditions, blockers, remarks…" }
+      ]
+    }
+  ]
+}

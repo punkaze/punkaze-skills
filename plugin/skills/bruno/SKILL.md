@@ -7,7 +7,7 @@ description: >-
   environments and secrets, or running collections with `bru run` (local or CI).
 metadata:
   author: piyawat
-  version: "1.1.0"
+  version: "1.2.0"
   tags: ["api-client", "bruno", "bru", "http", "testing", "ci"]
 ---
 
@@ -150,6 +150,70 @@ auth:bearer {
   token: {{authToken}}
 }
 ```
+
+## Response examples (native `example { }` block)
+
+Bruno's `.bru` format has a native, GUI-recognized block for saved example
+responses — distinct from free-text `docs { }` prose. Verified against the
+actual `@usebruno/lang` v2 parser (`bruToJsonV2`), not just written from memory:
+
+```bru
+example {
+  name: Successful deletion
+  description: Anonymizes the account and returns { deleted: true }
+
+  request: {
+    url: {{baseUrl}}/auth/me
+    method: delete
+    mode: none
+  }
+
+  response: {
+    status: {
+      code: 200
+      text: OK
+    }
+
+    body: {
+      type: json
+      content: '''
+        {
+          "success": true,
+          "data": {
+            "deleted": true
+          }
+        }
+      '''
+    }
+  }
+}
+```
+
+A file can hold multiple `example { }` blocks — one per distinct response case
+(success, a validation error, a conflict, etc.), each with its own `name`.
+`request` mirrors the top-level method block's shape (`url`, `method`,
+`mode`/`body:json` for a request body); `response.body.content` is a multiline
+string (`'''…'''`) holding the literal JSON text.
+
+**Workflow rule:** whenever creating or editing an endpoint's `.bru` file,
+always add or update its `example { }` block(s) — don't leave this for a
+separate pass. A plausible, hand-written example (matching the route's actual
+response shape) is fine by default. If getting a REAL captured response would
+require actually calling the live endpoint (`bru run`, curl against a running
+server, etc.), ask the user before doing that — don't invoke a live endpoint
+unprompted just to harvest a response for documentation.
+
+When a live check against the endpoint already happened this session (an e2e
+verification pass, manual testing, etc.) or the user explicitly asks for real
+captured responses, use the actual response instead of a hand-written one —
+real evidence beats a guess, and it's already sitting there. If that same
+verification pass cheaply exercised more than one distinct case (a boundary
+flag flipping true/false, an empty vs. populated result), capture each as its
+own named `example { }` block — don't invent extra live calls beyond what real
+testing already produced just to fill out cases. A large real response (a long
+array, a deeply nested payload) is still worth trimming to one or two
+representative elements for readability — note the trim in `description`
+(e.g. "trimmed to 1 of 5 records"), and never edit the values themselves.
 
 ## Environments
 

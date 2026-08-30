@@ -2,7 +2,7 @@
 
 A personal collection of [Agent Skills](https://code.claude.com/docs/en/skills) for Claude Code, packaged as an installable plugin.
 
-Currently ships five skills:
+Currently ships six skills:
 
 | Skill | What it does |
 | :---- | :----------- |
@@ -11,6 +11,7 @@ Currently ships five skills:
 | **worktree-setup** | Spin up isolated git worktree(s) for a task on any project — config-driven, deciding single vs dual/multi-repo scope (identical branch names on coupled repos), cutting from the right base branch, copying env files, and running the right install command. |
 | **free-disk-space** | Find what's safe to delete to reclaim disk space on macOS/Linux and hand you copy-paste cleanup commands, sorted by reclaimable size with a per-row safety flag. Read-only by default — it investigates and reports, never deleting anything on its own. |
 | **tracking-test-cases** | A persistent, branch-scoped pre-PR manual QA checklist — diffs each run against the last one, survives worktree deletion after merge, and hands results back the moment you record a round. |
+| **shelf-issue** | Capture an in-flight bug or investigation as a resumable known-issue doc, preview the whole corpus as a sortable/filterable local HTML dashboard, and safely bulk-retrofit many docs at once. |
 
 ## Install
 
@@ -27,6 +28,7 @@ Then invoke a skill by its namespaced name, e.g.:
 /skills:worktree-setup
 /skills:free-disk-space
 /skills:tracking-test-cases
+/skills:shelf-issue
 ```
 
 (Claude also invokes skills automatically when a task matches their description.)
@@ -233,6 +235,25 @@ plugin/skills/tracking-test-cases/
 ```bash
 python3 plugin/skills/tracking-test-cases/scripts/base-branch-smoke.test.py
 plugin/skills/tracking-test-cases/scripts/tracker-server-smoke.test.sh
+```
+
+## The `shelf-issue` skill
+
+Capture an in-flight bug or investigation as a resumable known-issue doc, without losing the context built up mid-investigation:
+
+- **Shelve a new issue (Workflow A)** — writes a dated `docs/known-issues/YYYY-MM-DD-<slug>.md` from the current conversation: symptom, what's already known, root-cause hypothesis, in-flight fix status, and next steps. Never fabricates — an empty section stays `_None yet._` instead of invented content, and it stops to ask if the conversation doesn't have enough to fill in the essentials.
+- **Preview the whole corpus (Workflow B)** — builds a self-contained, sortable/filterable local HTML dashboard (status, severity, category) with a click-through detail drawer, served on a local HTTP server. Status/severity are read mechanically off `[OPEN]`/`[FIXED]`/`[WONTFIX]` and `[Critical|High|Medium|Low]` bracket tokens, re-derived fresh every run, so a doc's real-world fix can't silently stop showing as fixed.
+- **Bulk-retrofit many docs at once (Workflow C)** — migrating the whole corpus to a template change, renaming a field everywhere it appears, and the like. Documents a real hazard: a field can wrap across multiple physical lines with no continuation marker, so a script that inserts a new field "after field X's first line" can strand X's remaining lines and have them silently swallowed by whatever comes next — the skill's own first Category-field migration hit this for real and broke a dashboard's table layout before the fix got written up here.
+- **Cross-repo aware** — a doc covering the same bug in two runtime instances stays `[OPEN]` until every instance is closed, rather than flipping to `[FIXED]` the moment one side lands.
+
+Skill contents live in [`plugin/skills/shelf-issue/`](plugin/skills/shelf-issue):
+
+```
+plugin/skills/shelf-issue/
+├── SKILL.md
+├── template.md         # known-issue doc template, copied per issue
+└── assets/
+    └── dashboard.html  # static dashboard shell, reused verbatim each run
 ```
 
 ## License

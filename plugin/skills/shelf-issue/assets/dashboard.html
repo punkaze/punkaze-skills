@@ -1,0 +1,743 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Known Issues</title>
+<style>
+  :root {
+    --bg: #0b0d12;
+    --panel: #12151c;
+    --panel-2: #171b24;
+    --border: #262b36;
+    --text: #e6e8ee;
+    --text-dim: #9aa2b1;
+    --text-faint: #656d7d;
+    --accent: #5b8cff;
+    --critical: #ff2d6b;
+    --critical-bg: rgba(255, 45, 107, 0.16);
+    --high: #ff5c5c;
+    --high-bg: rgba(255, 92, 92, 0.12);
+    --med: #ffb454;
+    --med-bg: rgba(255, 180, 84, 0.12);
+    --low: #6fd0a8;
+    --low-bg: rgba(111, 208, 168, 0.12);
+    --fixed: #6fd0a8;
+    --open: #ffb454;
+    --code-bg: #0e1116;
+    --mono: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  header {
+    padding: 28px 32px 20px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(11, 13, 18, 0.92);
+    backdrop-filter: blur(8px);
+    z-index: 10;
+  }
+
+  header h1 {
+    margin: 0 0 4px;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  header .sub {
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+
+  .stats {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+
+  .stat-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    font-size: 12.5px;
+    color: var(--text-dim);
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .stat-pill:hover { border-color: #3a4152; color: var(--text); }
+  .stat-pill.active { border-color: var(--accent); color: var(--text); background: rgba(91, 140, 255, 0.1); }
+
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .dot.critical { background: var(--critical); }
+  .dot.high { background: var(--high); }
+  .dot.medium { background: var(--med); }
+  .dot.low { background: var(--low); }
+
+  .controls {
+    padding: 18px 32px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .search {
+    flex: 1;
+    min-width: 220px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 14px;
+    color: var(--text);
+    font-size: 13.5px;
+    outline: none;
+  }
+  .search::placeholder { color: var(--text-faint); }
+  .search:focus { border-color: var(--accent); }
+
+  select {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 9px 10px;
+    font-size: 13px;
+    outline: none;
+  }
+
+  main {
+    padding: 20px 32px 60px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+
+  thead th {
+    text-align: left;
+    padding: 10px 14px;
+    color: var(--text-faint);
+    font-weight: 600;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  thead th:hover { color: var(--text-dim); }
+  thead th.sorted { color: var(--accent); }
+  thead th.no-col { cursor: default; }
+  thead th.no-col:hover { color: var(--text-faint); }
+
+  tbody tr {
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  tbody tr:hover { background: var(--panel); }
+
+  tbody td {
+    padding: 13px 14px;
+    vertical-align: top;
+  }
+
+  .no-cell { color: var(--text-faint); font-variant-numeric: tabular-nums; width: 1%; white-space: nowrap; }
+
+  .title-cell { font-weight: 500; max-width: 340px; }
+  .title-cell .slug {
+    display: block; color: var(--text-faint); font-size: 11px; font-family: var(--mono); margin-top: 2px;
+    cursor: pointer; transition: color 0.15s; width: fit-content;
+  }
+  .title-cell .slug:hover { color: var(--accent); }
+  .title-cell .slug.copied { color: var(--low); }
+
+  .impact-cell { color: var(--text-dim); max-width: 420px; line-height: 1.45; }
+
+  .cat-cell { color: var(--text-dim); max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge.critical { color: var(--critical); background: var(--critical-bg); border: 1px solid rgba(255, 45, 107, 0.45); font-weight: 700; }
+  .badge.high { color: var(--high); background: var(--high-bg); }
+  .badge.medium { color: var(--med); background: var(--med-bg); }
+  .badge.low { color: var(--low); background: var(--low-bg); }
+  .badge.tracker-badge { color: var(--accent); background: rgba(91, 140, 255, 0.12); border: 1px solid rgba(91, 140, 255, 0.35); font-family: var(--mono); text-decoration: none; }
+  a.badge.tracker-badge:hover { background: rgba(91, 140, 255, 0.2); }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+  .status-pill::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--open);
+  }
+  .status-pill.fixed::before { background: var(--fixed); }
+  .status-pill.fixed { color: var(--fixed); }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-faint);
+    font-size: 13.5px;
+  }
+
+  /* Detail overlay */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s;
+    z-index: 100;
+  }
+  .overlay.open { opacity: 1; pointer-events: auto; }
+
+  .drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(760px, 92vw);
+    background: var(--panel);
+    border-left: 1px solid var(--border);
+    transform: translateX(100%);
+    transition: transform 0.22s cubic-bezier(.2,.8,.2,1);
+    z-index: 101;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -20px 0 60px rgba(0,0,0,0.4);
+  }
+  .drawer.open { transform: translateX(0); }
+
+  .drawer-head {
+    padding: 22px 26px 18px;
+    border-bottom: 1px solid var(--border);
+    flex: none;
+  }
+
+  .drawer-head .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .drawer-head h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.35;
+  }
+
+  .drawer-head .meta-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .close-btn {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .close-btn:hover { color: var(--text); border-color: #3a4152; }
+
+  .drawer-body {
+    padding: 22px 26px 60px;
+    overflow-y: auto;
+    flex: 1;
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--text-dim);
+  }
+
+  .file-link {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--text-faint);
+    margin-top: 4px;
+  }
+
+  /* Rendered markdown */
+  .md h1, .md h2, .md h3 {
+    color: var(--text);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 26px 0 10px;
+  }
+  .md h1 { font-size: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  .md h2 { font-size: 15px; }
+  .md h3 { color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.03em; font-size: 11.5px; }
+  .md p { margin: 10px 0; }
+  .md strong { color: var(--text); font-weight: 600; }
+  .md ul, .md ol { padding-left: 22px; margin: 8px 0; }
+  .md li { margin: 4px 0; }
+  .md li > ul, .md li > ol { margin: 4px 0; }
+  .md code {
+    font-family: var(--mono);
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 12px;
+    color: #b8c4ff;
+  }
+  .md pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    margin: 12px 0;
+  }
+  .md pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--text-dim);
+    font-size: 12px;
+    line-height: 1.55;
+  }
+  .md a { color: var(--accent); text-decoration: none; }
+  .md a:hover { text-decoration: underline; }
+  .md hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  .md blockquote {
+    margin: 10px 0;
+    padding: 4px 14px;
+    border-left: 3px solid var(--border);
+    color: var(--text-faint);
+  }
+  .md table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 12.5px;
+  }
+  .md th, .md td {
+    border: 1px solid var(--border);
+    padding: 7px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+  .md th { color: var(--text); background: var(--panel-2); font-weight: 600; }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: #262b36; border-radius: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  @media (max-width: 760px) {
+    header, .controls, main { padding-left: 16px; padding-right: 16px; }
+    .impact-cell, .cat-cell { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="pageTitle">Known Issues</h1>
+  <div class="sub" id="pageSub">click any row for full detail</div>
+  <div class="stats" id="stats"></div>
+</header>
+
+<div class="controls">
+  <input class="search" id="search" type="text" placeholder="Search title, category, impact…" />
+  <select id="categoryFilter"><option value="">All categories</option></select>
+  <select id="statusFilter">
+    <option value="">All statuses</option>
+    <option value="open">Open</option>
+    <option value="fixed">Fixed</option>
+  </select>
+</div>
+
+<main>
+  <table>
+    <thead>
+      <tr>
+        <th class="no-col">#</th>
+        <th data-key="title">Issue</th>
+        <th data-key="category">Category</th>
+        <th data-key="severityLevel">Severity</th>
+        <th data-key="impact">Impact</th>
+        <th data-key="statusKind">Status</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <div class="empty-state" id="emptyState" style="display:none;">No issues match the current filters.</div>
+</main>
+
+<div class="overlay" id="overlay"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div class="top-row">
+      <h2 id="drawerTitle"></h2>
+      <button class="close-btn" id="closeBtn" aria-label="Close">✕</button>
+    </div>
+    <div class="meta-row" id="drawerMeta"></div>
+    <div class="file-link" id="drawerFile"></div>
+  </div>
+  <div class="drawer-body md" id="drawerBody"></div>
+</div>
+
+<script src="known-issues-data.js"></script>
+<script>
+(function () {
+  const SEV_ORDER = { Critical: 0, High: 1, Medium: 2, Low: 3 };
+  const data = (typeof KNOWN_ISSUES !== 'undefined' ? KNOWN_ISSUES : []).slice();
+  const meta = (typeof DASHBOARD_META !== 'undefined' ? DASHBOARD_META : {});
+
+  document.title = meta.title ? 'Known Issues — ' + meta.title : 'Known Issues';
+  document.getElementById('pageTitle').textContent = meta.title ? 'Known Issues — ' + meta.title : 'Known Issues';
+  document.getElementById('pageSub').textContent = (meta.subtitle ? meta.subtitle + ' · ' : '') + 'click any row for full detail';
+
+  const state = { sortKey: 'severityLevel', sortDir: 1, search: '', category: '', status: '', severityPill: '' };
+
+  // ---- tiny markdown renderer (headers, bold/italic, code, code-block, lists, table, links, hr, blockquote) ----
+  function escapeHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function renderInline(text) {
+    let t = escapeHtml(text);
+    // Code spans are pulled into \0-delimited placeholders BEFORE bold/italic/link
+    // run, so a span like `a**b**c` or `[x](y)` inside inline code can't get
+    // re-parsed as markdown by the passes below.
+    const codeSpans = [];
+    t = t.replace(/`([^`]+)`/g, (_, code) => {
+      codeSpans.push(code);
+      return '\0' + (codeSpans.length - 1) + '\0';
+    });
+    t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    t = t.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
+    t = t.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    t = t.replace(/\0(\d+)\0/g, (_, i) => '<code>' + codeSpans[Number(i)] + '</code>');
+    return t;
+  }
+
+  function renderMarkdown(md) {
+    const lines = md.replace(/\r\n/g, '\n').split('\n');
+    let html = '';
+    let i = 0;
+    let inList = null; // 'ul' | 'ol'
+    let inCode = false;
+    let codeBuf = [];
+    let paraBuf = [];
+
+    function flushPara() {
+      if (paraBuf.length) {
+        html += '<p>' + renderInline(paraBuf.join(' ')) + '</p>';
+        paraBuf = [];
+      }
+    }
+    function closeList() {
+      if (inList) { html += inList === 'ul' ? '</ul>' : '</ol>'; inList = null; }
+    }
+
+    while (i < lines.length) {
+      const line = lines[i];
+
+      if (/^```/.test(line)) {
+        flushPara(); closeList();
+        if (!inCode) { inCode = true; codeBuf = []; }
+        else {
+          html += '<pre><code>' + escapeHtml(codeBuf.join('\n')) + '</code></pre>';
+          inCode = false;
+        }
+        i++; continue;
+      }
+      if (inCode) { codeBuf.push(line); i++; continue; }
+
+      if (/^\s*$/.test(line)) { flushPara(); closeList(); i++; continue; }
+
+      const h = line.match(/^(#{1,4})\s+(.*)$/);
+      if (h) {
+        flushPara(); closeList();
+        const lvl = Math.min(h[1].length, 3);
+        html += '<h' + lvl + '>' + renderInline(h[2]) + '</h' + lvl + '>';
+        i++; continue;
+      }
+
+      if (/^---+\s*$/.test(line) || /^\*\*\*+\s*$/.test(line)) {
+        flushPara(); closeList();
+        html += '<hr/>'; i++; continue;
+      }
+
+      if (/^>\s?/.test(line)) {
+        flushPara(); closeList();
+        const bq = [];
+        while (i < lines.length && /^>\s?/.test(lines[i])) { bq.push(lines[i].replace(/^>\s?/, '')); i++; }
+        html += '<blockquote>' + renderInline(bq.join(' ')) + '</blockquote>';
+        continue;
+      }
+
+      if (/^\s*\|.*\|\s*$/.test(line)) {
+        flushPara(); closeList();
+        const tbl = [];
+        while (i < lines.length && /^\s*\|.*\|\s*$/.test(lines[i])) { tbl.push(lines[i]); i++; }
+        if (tbl.length >= 2) {
+          const headCells = tbl[0].trim().replace(/^\||\|$/g, '').split('|').map(s => s.trim());
+          const bodyRows = tbl.slice(2).map(r => r.trim().replace(/^\||\|$/g, '').split('|').map(s => s.trim()));
+          html += '<table><thead><tr>' + headCells.map(c => '<th>' + renderInline(c) + '</th>').join('') + '</tr></thead><tbody>';
+          bodyRows.forEach(r => {
+            html += '<tr>' + r.map(c => '<td>' + renderInline(c) + '</td>').join('') + '</tr>';
+          });
+          html += '</tbody></table>';
+        }
+        continue;
+      }
+
+      const ol = line.match(/^\s*\d+\.\s+(.*)$/);
+      const ul = line.match(/^\s*[-*]\s+(.*)$/);
+      if (ol || ul) {
+        flushPara();
+        const kind = ol ? 'ol' : 'ul';
+        if (inList !== kind) { closeList(); html += kind === 'ul' ? '<ul>' : '<ol>'; inList = kind; }
+        html += '<li>' + renderInline((ol || ul)[1]) + '</li>';
+        i++; continue;
+      }
+
+      closeList();
+      paraBuf.push(line.trim());
+      i++;
+    }
+    flushPara(); closeList();
+    if (inCode && codeBuf.length) html += '<pre><code>' + escapeHtml(codeBuf.join('\n')) + '</code></pre>';
+    return html;
+  }
+
+  // ---- UI wiring ----
+  const rowsEl = document.getElementById('rows');
+  const emptyEl = document.getElementById('emptyState');
+  const statsEl = document.getElementById('stats');
+  const categorySelect = document.getElementById('categoryFilter');
+  const searchEl = document.getElementById('search');
+  const statusSelect = document.getElementById('statusFilter');
+  const overlay = document.getElementById('overlay');
+  const drawer = document.getElementById('drawer');
+
+  const categories = [...new Set(data.map(d => d.category))].sort();
+  categories.forEach(c => {
+    const o = document.createElement('option');
+    o.value = c; o.textContent = c;
+    categorySelect.appendChild(o);
+  });
+
+  function renderStats() {
+    const severityBase = applyFilters('severity');
+    const counts = { Critical: 0, High: 0, Medium: 0, Low: 0 };
+    severityBase.forEach(d => counts[d.severityLevel] = (counts[d.severityLevel] || 0) + 1);
+
+    const statusBase = applyFilters('status');
+    const openCount = statusBase.filter(d => d.statusKind === 'open').length;
+    const fixedCount = statusBase.length - openCount;
+
+    statsEl.innerHTML = `
+      <div class="stat-pill" data-total>Total: ${data.length}</div>
+      ${counts.Critical ? `<div class="stat-pill" data-sev="Critical"><span class="dot critical"></span>Critical: ${counts.Critical}</div>` : ''}
+      <div class="stat-pill" data-sev="High"><span class="dot high"></span>High: ${counts.High || 0}</div>
+      <div class="stat-pill" data-sev="Medium"><span class="dot medium"></span>Medium: ${counts.Medium || 0}</div>
+      <div class="stat-pill" data-sev="Low"><span class="dot low"></span>Low: ${counts.Low || 0}</div>
+      <div class="stat-pill" data-status="open">Open: ${openCount}</div>
+      <div class="stat-pill" data-status="fixed">Fixed: ${fixedCount}</div>
+    `;
+
+    statsEl.querySelectorAll('[data-sev]').forEach(el => {
+      el.classList.toggle('active', state.severityPill === el.getAttribute('data-sev'));
+      el.addEventListener('click', () => {
+        const sev = el.getAttribute('data-sev');
+        state.severityPill = state.severityPill === sev ? '' : sev;
+        renderAll();
+      });
+    });
+    statsEl.querySelectorAll('[data-status]').forEach(el => {
+      el.classList.toggle('active', state.status === el.getAttribute('data-status'));
+      el.addEventListener('click', () => {
+        const st = el.getAttribute('data-status');
+        statusSelect.value = statusSelect.value === st ? '' : st;
+        state.status = statusSelect.value;
+        renderAll();
+      });
+    });
+    const totalPill = statsEl.querySelector('[data-total]');
+    totalPill.classList.toggle('active', !state.severityPill && !state.status && !state.category && !state.search);
+    totalPill.addEventListener('click', () => {
+      state.severityPill = '';
+      state.status = ''; statusSelect.value = '';
+      state.category = ''; categorySelect.value = '';
+      state.search = ''; searchEl.value = '';
+      renderAll();
+    });
+  }
+
+  function applyFilters(exclude) {
+    const q = state.search.trim().toLowerCase();
+    return data.filter(d => {
+      if (exclude !== 'severity' && state.severityPill && d.severityLevel !== state.severityPill) return false;
+      if (state.category && d.category !== state.category) return false;
+      if (exclude !== 'status' && state.status && d.statusKind !== state.status) return false;
+      if (q) {
+        const hay = (d.title + ' ' + d.category + ' ' + d.impact + ' ' + d.severityText).toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }
+
+  const STATUS_ORDER = { open: 0, fixed: 1 };
+
+  function sortRows(rows) {
+    const { sortKey, sortDir } = state;
+    return rows.slice().sort((a, b) => {
+      if (a.statusKind !== b.statusKind) return STATUS_ORDER[a.statusKind] - STATUS_ORDER[b.statusKind];
+      let av = a[sortKey], bv = b[sortKey];
+      if (sortKey === 'severityLevel') { av = SEV_ORDER[a.severityLevel]; bv = SEV_ORDER[b.severityLevel]; }
+      if (sortKey === 'statusKind') { av = a.statusKind; bv = b.statusKind; }
+      if (typeof av === 'string') av = av.toLowerCase();
+      if (typeof bv === 'string') bv = bv.toLowerCase();
+      if (av < bv) return -1 * sortDir;
+      if (av > bv) return 1 * sortDir;
+      return 0;
+    });
+  }
+
+  function copySlug(el, slug) {
+    navigator.clipboard.writeText(slug).then(() => {
+      const original = el.textContent;
+      el.textContent = 'Copied!';
+      el.classList.add('copied');
+      setTimeout(() => { el.textContent = original; el.classList.remove('copied'); }, 1000);
+    });
+  }
+
+  function renderRows() {
+    const filtered = sortRows(applyFilters());
+    rowsEl.innerHTML = '';
+    emptyEl.style.display = filtered.length ? 'none' : 'block';
+
+    filtered.forEach((d, idx) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="no-cell">${idx + 1}</td>
+        <td class="title-cell">${escapeHtml(d.title)}<span class="slug" title="Click to copy">${escapeHtml(d.slug)}</span></td>
+        <td class="cat-cell" title="${escapeHtml(d.category)}">${escapeHtml(d.category)}</td>
+        <td><span class="badge ${d.severityLevel.toLowerCase()}">${d.severityLevel}</span></td>
+        <td class="impact-cell">${escapeHtml(d.impact)}</td>
+        <td><span class="status-pill ${d.statusKind}">${d.statusKind === 'fixed' ? 'Fixed' : 'Open'}</span></td>
+      `;
+      tr.addEventListener('click', () => openDrawer(d));
+      tr.querySelector('.slug').addEventListener('click', e => { e.stopPropagation(); copySlug(e.currentTarget, d.slug); });
+      rowsEl.appendChild(tr);
+    });
+  }
+
+  function updateSortHeaders() {
+    document.querySelectorAll('thead th').forEach(th => {
+      th.classList.toggle('sorted', th.getAttribute('data-key') === state.sortKey);
+    });
+  }
+
+  function renderAll() {
+    renderStats();
+    renderRows();
+    updateSortHeaders();
+  }
+
+  document.querySelectorAll('thead th[data-key]').forEach(th => {
+    th.addEventListener('click', () => {
+      const key = th.getAttribute('data-key');
+      if (state.sortKey === key) state.sortDir *= -1;
+      else { state.sortKey = key; state.sortDir = 1; }
+      renderAll();
+    });
+  });
+
+  searchEl.addEventListener('input', () => { state.search = searchEl.value; renderAll(); });
+  categorySelect.addEventListener('change', () => { state.category = categorySelect.value; renderAll(); });
+  statusSelect.addEventListener('change', () => { state.status = statusSelect.value; renderAll(); });
+
+  function openDrawer(d) {
+    document.getElementById('drawerTitle').textContent = d.title;
+    document.getElementById('drawerFile').textContent = d.file;
+    document.getElementById('drawerMeta').innerHTML = `
+      <span class="badge ${d.severityLevel.toLowerCase()}">${d.severityLevel} severity</span>
+      <span class="status-pill ${d.statusKind}">${d.statusKind === 'fixed' ? 'Fixed' : 'Open'}</span>
+      <span class="badge" style="color:var(--text-dim);background:var(--panel-2);">${escapeHtml(d.category)}</span>
+      ${d.tracker ? (/^https?:\/\//i.test(d.tracker)
+        ? `<a class="badge tracker-badge" href="${escapeHtml(d.tracker)}" target="_blank" rel="noopener">${escapeHtml(d.tracker)}</a>`
+        : `<span class="badge tracker-badge">${escapeHtml(d.tracker)}</span>`) : ''}
+    `;
+    document.getElementById('drawerBody').innerHTML = renderMarkdown(d.bodyMarkdown);
+    overlay.classList.add('open');
+    drawer.classList.add('open');
+  }
+
+  function closeDrawer() {
+    overlay.classList.remove('open');
+    drawer.classList.remove('open');
+  }
+
+  document.getElementById('closeBtn').addEventListener('click', closeDrawer);
+  overlay.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+
+  renderAll();
+})();
+</script>
+
+</body>
+</html>
